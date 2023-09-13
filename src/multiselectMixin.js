@@ -67,7 +67,8 @@ export default {
       search: '',
       isOpen: false,
       preferredOpenDirection: 'below',
-      optimizedHeight: this.maxHeight
+      optimizedHeight: this.maxHeight,
+      avoidAutofocus: false
     }
   },
   props: {
@@ -123,7 +124,8 @@ export default {
      * @type {String}
      */
     label: {
-      type: String
+      type: String,
+      default: 'label'
     },
     /**
      * Enable/disable search in options
@@ -315,6 +317,15 @@ export default {
     preselectFirst: {
       type: Boolean,
       default: false
+    },
+    /**
+     * Search input's autocomplete attribute value
+     * @default 'off'
+     * @type {String}
+    */
+    autocomplete: {
+      type: String,
+      default: 'off'
     }
   },
   mounted () {
@@ -655,7 +666,11 @@ export default {
       /* istanbul ignore else  */
       if (this.searchable) {
         if (!this.preserveSearch) this.search = ''
-        this.$nextTick(() => this.$refs.search.focus())
+        if (!this.avoidAutofocus) {
+          this.$nextTick(() => this.$refs.search.focus())
+        }
+
+        this.avoidAutofocus = false;
       } else {
         this.$el.focus()
       }
@@ -709,6 +724,44 @@ export default {
         this.preferredOpenDirection = 'above'
         this.optimizedHeight = Math.min(spaceAbove - 40, this.maxHeight)
       }
+    },
+    /**
+     * Tried to find option based on input event value
+     * and select it. If option was find - closes dropdown.
+     * Otherwise just update search value.
+     */
+    onAutocompleteFieldInput (event) {
+      /* istanbul ignore else  */
+      if (!this.autocomplete || this.multiple || !event || !event.target) {
+        return;
+      }
+
+      const selectedOption = this.findOptionByFieldNameAndValue(
+        this.label,
+        event.target.value
+      );
+      /* istanbul ignore else  */
+      if (!selectedOption) {
+        this.updateSearch(event.target.value);
+        return;
+      }
+
+      this.select(selectedOption);
+      this.avoidAutofocus = true;
+
+      this.deactivate();
+    },
+    findOptionByFieldNameAndValue (
+      fieldName,
+      value
+    ) {
+      return this.options.find((option) => {
+        if (!fieldName || typeof option === 'string') {
+          return option === value;
+        } else {
+          return option[fieldName] === value;
+        }
+      })
     }
   }
 }
