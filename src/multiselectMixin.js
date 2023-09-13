@@ -67,8 +67,7 @@ export default {
       search: '',
       isOpen: false,
       preferredOpenDirection: 'below',
-      optimizedHeight: this.maxHeight,
-      avoidAutofocus: false
+      optimizedHeight: this.maxHeight
     }
   },
   props: {
@@ -666,11 +665,7 @@ export default {
       /* istanbul ignore else  */
       if (this.searchable) {
         if (!this.preserveSearch) this.search = ''
-        if (!this.avoidAutofocus) {
-          this.$nextTick(() => this.$refs.search.focus())
-        }
-
-        this.avoidAutofocus = false;
+        this.$nextTick(() => this.$refs.search.focus())
       } else {
         this.$el.focus()
       }
@@ -747,9 +742,10 @@ export default {
       }
 
       this.select(selectedOption);
-      this.avoidAutofocus = true;
 
-      this.deactivate();
+      setTimeout(() => {
+        this.deactivate();
+      }, 0);
     },
     findOptionByFieldNameAndValue (
       fieldName,
