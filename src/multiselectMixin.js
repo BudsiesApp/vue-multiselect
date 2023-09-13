@@ -123,7 +123,8 @@ export default {
      * @type {String}
      */
     label: {
-      type: String
+      type: String,
+      default: 'label'
     },
     /**
      * Enable/disable search in options
@@ -324,6 +325,15 @@ export default {
     preventAutofocus: {
       type: Boolean,
       default: false
+    },
+    /**
+     * Search input's autocomplete attribute value
+     * @default 'off'
+     * @type {String}
+    */
+    autocomplete: {
+      type: String,
+      default: 'off'
     }
   },
   mounted () {
@@ -725,6 +735,43 @@ export default {
         this.preferredOpenDirection = 'above'
         this.optimizedHeight = Math.min(spaceAbove - 40, this.maxHeight)
       }
+    },
+    /**
+     * Tried to find option based on input event value
+     * and select it. If option was find - closes dropdown.
+     * Otherwise just update search value.
+     */
+    onAutocompleteFieldInput (event) {
+      /* istanbul ignore else  */
+      if (!this.autocomplete || this.multiple || !event || !event.target) {
+        return;
+      }
+
+      const selectedOption = this.findOptionByFieldNameAndValue(
+        this.label,
+        event.target.value
+      );
+      /* istanbul ignore else  */
+      if (!selectedOption) {
+        this.updateSearch(event.target.value);
+        return;
+      }
+
+      this.select(selectedOption);
+
+      this.deactivate();
+    },
+    findOptionByFieldNameAndValue (
+      fieldName,
+      value
+    ) {
+      return this.options.find((option) => {
+        if (!fieldName || typeof option === 'string') {
+          return option === value;
+        } else {
+          return option[fieldName] === value;
+        }
+      })
     }
   }
 }

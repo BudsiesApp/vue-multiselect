@@ -50,7 +50,7 @@
           :name="name"
           :id="id"
           type="text"
-          autocomplete="off"
+          :autocomplete="autocomplete"
           spellcheck="false"
           :placeholder="placeholder"
           :style="inputStyle"
@@ -65,6 +65,7 @@
           @keydown.up.prevent="pointerBackward()"
           @keypress.enter.prevent.stop.self="addPointerElement($event)"
           @keydown.delete.stop="removeLastElement()"
+          @change="onAutocompleteFieldInput"
           class="multiselect__input"
           :aria-controls="'listbox-'+id"
         />
