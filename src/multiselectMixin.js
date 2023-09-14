@@ -721,9 +721,9 @@ export default {
       }
     },
     /**
-     * Tried to find option based on input event value
-     * and select it. If option was find - closes dropdown.
-     * Otherwise just update search value.
+     * Try to find option based on input event value
+     * and select it. If option is found - close dropdown.
+     * Otherwise just update the search value.
      */
     onAutocompleteFieldInput (event) {
       /* istanbul ignore else  */
