@@ -123,7 +123,8 @@ export default {
      * @type {String}
      */
     label: {
-      type: String
+      type: String,
+      default: 'label'
     },
     /**
      * Enable/disable search in options
@@ -315,6 +316,15 @@ export default {
     preselectFirst: {
       type: Boolean,
       default: false
+    },
+    /**
+     * Search input's autocomplete attribute value
+     * @default 'off'
+     * @type {String}
+    */
+    autocomplete: {
+      type: String,
+      default: 'off'
     }
   },
   mounted () {
@@ -709,6 +719,45 @@ export default {
         this.preferredOpenDirection = 'above'
         this.optimizedHeight = Math.min(spaceAbove - 40, this.maxHeight)
       }
+    },
+    /**
+     * Try to find option based on input event value
+     * and select it. If option is found - close dropdown.
+     * Otherwise just update the search value.
+     */
+    onAutocompleteFieldInput (event) {
+      /* istanbul ignore else  */
+      if (!this.autocomplete || this.multiple || !event || !event.target) {
+        return;
+      }
+
+      const selectedOption = this.findOptionByFieldNameAndValue(
+        this.label,
+        event.target.value
+      );
+      /* istanbul ignore else  */
+      if (!selectedOption) {
+        this.updateSearch(event.target.value);
+        return;
+      }
+
+      this.select(selectedOption);
+
+      setTimeout(() => {
+        this.deactivate();
+      }, 0);
+    },
+    findOptionByFieldNameAndValue (
+      fieldName,
+      value
+    ) {
+      return this.options.find((option) => {
+        if (!fieldName || typeof option === 'string') {
+          return option === value;
+        } else {
+          return option[fieldName] === value;
+        }
+      })
     }
   }
 }

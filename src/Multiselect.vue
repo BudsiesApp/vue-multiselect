@@ -48,7 +48,8 @@
           :name="name"
           :id="id"
           type="text"
-          autocomplete="nope"
+          :autocomplete="autocomplete"
+          spellcheck="false"
           :placeholder="placeholder"
           :style="inputStyle"
           :value="search"
@@ -62,6 +63,7 @@
           @keydown.up.prevent="pointerBackward()"
           @keypress.enter.prevent.stop.self="addPointerElement($event)"
           @keydown.delete.stop="removeLastElement()"
+          @change="onAutocompleteFieldInput"
           class="multiselect__input"
         />
         <span
