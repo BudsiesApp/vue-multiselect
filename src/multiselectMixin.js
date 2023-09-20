@@ -111,7 +111,6 @@ export default {
     },
     /**
      * Key to compare objects
-     * @default 'id'
      * @type {String}
      */
     trackBy: {
@@ -119,12 +118,10 @@ export default {
     },
     /**
      * Label to look for in option Object
-     * @default 'label'
      * @type {String}
      */
     label: {
-      type: String,
-      default: 'label'
+      type: String
     },
     /**
      * Enable/disable search in options
@@ -728,24 +725,24 @@ export default {
     onAutocompleteFieldInput (event) {
       /* istanbul ignore else  */
       if (!this.autocomplete || this.multiple || !event || !event.target) {
-        return;
+        return
       }
 
       const selectedOption = this.findOptionByFieldNameAndValue(
         this.label,
         event.target.value
-      );
+      )
       /* istanbul ignore else  */
       if (!selectedOption) {
-        this.updateSearch(event.target.value);
-        return;
+        this.updateSearch(event.target.value)
+        return
       }
 
-      this.select(selectedOption);
+      this.select(selectedOption)
 
       setTimeout(() => {
-        this.deactivate();
-      }, 0);
+        this.deactivate()
+      }, 0)
     },
     findOptionByFieldNameAndValue (
       fieldName,
@@ -753,9 +750,9 @@ export default {
     ) {
       return this.options.find((option) => {
         if (!fieldName || typeof option === 'string') {
-          return option === value;
+          return option === value
         } else {
-          return option[fieldName] === value;
+          return option[fieldName] === value
         }
       })
     }
