@@ -111,7 +111,6 @@ export default {
     },
     /**
      * Key to compare objects
-     * @default 'id'
      * @type {String}
      */
     trackBy: {
@@ -119,12 +118,10 @@ export default {
     },
     /**
      * Label to look for in option Object
-     * @default 'label'
      * @type {String}
      */
     label: {
       type: String,
-      default: 'label'
     },
     /**
      * Enable/disable search in options
