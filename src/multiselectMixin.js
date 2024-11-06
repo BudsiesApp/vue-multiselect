@@ -768,7 +768,7 @@ export default {
         }
 
         if (this.autocompleteValueSearch && !isFound) {
-          isFound = this.autocompleteValueSearch()
+          isFound = this.autocompleteValueSearch(option)
         }
 
         return isFound
