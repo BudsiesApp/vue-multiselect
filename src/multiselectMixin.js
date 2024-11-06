@@ -762,9 +762,9 @@ export default {
         let isFound = false
 
         if (!fieldName || typeof option === 'string') {
-          isFound = option.toLowerCase() === value.toLowerCase()
+          isFound = option.toLowerCase().trim() === value.toLowerCase().trim()
         } else {
-          isFound = option[fieldName].toLowerCase() === value.toLowerCase()
+          isFound = option[fieldName].toLowerCase().trim() === value.toLowerCase().trim()
         }
 
         if (this.autocompleteValueSearch && !isFound) {
