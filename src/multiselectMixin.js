@@ -322,6 +322,15 @@ export default {
     autocomplete: {
       type: String,
       default: 'off'
+    },
+    /**
+     * Function for find option by autocompleted value
+     * @default undefined
+     * @type {Function}
+    */
+    autocompleteValueSearch: {
+      type: Function,
+      default: undefined
     }
   },
   mounted () {
@@ -735,6 +744,7 @@ export default {
       /* istanbul ignore else  */
       if (!selectedOption) {
         this.updateSearch(event.target.value)
+        this.$emit('autocomplete-option-not-found', event.target.value)
         return
       }
 
@@ -749,11 +759,19 @@ export default {
       value
     ) {
       return this.options.find((option) => {
+        let isFound = false
+
         if (!fieldName || typeof option === 'string') {
-          return option === value
+          isFound = option.toLowerCase() === value.toLowerCase()
         } else {
-          return option[fieldName] === value
+          isFound = option[fieldName].toLowerCase() === value.toLowerCase()
         }
+
+        if (this.autocompleteValueSearch && !isFound) {
+          isFound = this.autocompleteValueSearch()
+        }
+
+        return isFound
       })
     }
   }
