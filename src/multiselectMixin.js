@@ -760,7 +760,7 @@ export default {
     ) {
       return this.options.find((option) => {
         let isFound = false
-        const formattedValue = value.toLowerCase().trim()
+        const formattedValue = value ? value.toLowerCase().trim() : ''
 
         if (!fieldName || typeof option === 'string') {
           isFound = option.toLowerCase().trim() === formattedValue
