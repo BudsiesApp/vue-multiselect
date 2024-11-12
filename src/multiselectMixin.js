@@ -760,15 +760,16 @@ export default {
     ) {
       return this.options.find((option) => {
         let isFound = false
+        const formattedValue = value ? value.toLowerCase().trim() : ''
 
         if (!fieldName || typeof option === 'string') {
-          isFound = option.toLowerCase().trim() === value.toLowerCase().trim()
+          isFound = option.toLowerCase().trim() === formattedValue
         } else {
-          isFound = option[fieldName].toLowerCase().trim() === value.toLowerCase().trim()
+          isFound = option[fieldName].toLowerCase().trim() === formattedValue
         }
 
         if (this.autocompleteValueSearch && !isFound) {
-          isFound = this.autocompleteValueSearch(option)
+          isFound = this.autocompleteValueSearch(option, formattedValue)
         }
 
         return isFound
