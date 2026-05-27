@@ -48,6 +48,11 @@
           :name="name"
           :id="id"
           type="text"
+          role="combobox"
+          :aria-expanded="isOpen ? 'true' : 'false'"
+          :aria-owns="id + '-listbox'"
+          :aria-activedescendant="isOpen && pointerDirty ? id + '-option-' + pointer : null"
+          aria-autocomplete="list"
           :autocomplete="autocomplete"
           spellcheck="false"
           :placeholder="placeholder"
@@ -95,7 +100,7 @@
           :style="{ maxHeight: optimizedHeight + 'px' }"
           ref="list"
         >
-          <ul class="multiselect__content" :style="contentStyle">
+          <ul class="multiselect__content" :style="contentStyle" :id="id + '-listbox'" role="listbox">
             <slot name="beforeList"></slot>
             <li v-if="multiple && max === internalValue.length">
               <span class="multiselect__option">
@@ -106,6 +111,9 @@
               <li class="multiselect__element" v-for="(option, index) of filteredOptions" :key="index">
                 <span
                   v-if="!(option && (option.$isLabel || option.$isDisabled))"
+                  :id="id + '-option-' + index"
+                  role="option"
+                  :aria-selected="isSelected(option) ? 'true' : 'false'"
                   :class="optionHighlight(index, option)"
                   @click.stop="select(option)"
                   @mouseenter.self="pointerSet(index)"
@@ -831,3 +839,4 @@ fieldset[disabled] .multiselect {
   }
 }
 </style>
+
