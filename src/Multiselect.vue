@@ -55,6 +55,7 @@
           aria-autocomplete="list"
           :autocomplete="autocomplete"
           spellcheck="false"
+          :aria-labelledby="labelledBy"
           :placeholder="placeholder"
           :style="inputStyle"
           :value="search"
@@ -299,6 +300,10 @@ export default {
     tabindex: {
       type: Number,
       default: 0
+    },
+    labelledBy: {
+      type: String,
+      default: undefined
     }
   },
   computed: {
