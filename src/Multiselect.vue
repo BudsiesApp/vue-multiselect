@@ -60,7 +60,6 @@
           aria-autocomplete="list"
           :autocomplete="autocomplete"
           spellcheck="false"
-          :aria-labelledby="labelledBy"
           :placeholder="placeholder"
           :style="inputStyle"
           :value="search"
