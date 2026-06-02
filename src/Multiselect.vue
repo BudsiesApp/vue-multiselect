@@ -1,19 +1,26 @@
 <template>
   <div
-    :tabindex="searchable ? -1 : tabindex"
+    :id="id"
+    :tabindex="searchable && isOpen ? -1 : tabindex"
     :class="{ 'multiselect--active': isOpen, 'multiselect--disabled': disabled, 'multiselect--above': isAbove }"
-    @focus="activate()"
+    role="combobox"
+    :aria-expanded="isOpen ? 'true' : 'false'"
+    :aria-owns="id + '-listbox'"
+    :aria-activedescendant="isOpen && pointerDirty ? id + '-option-' + pointer : null"
+    aria-haspopup="listbox"
+    :aria-labelledby="labelledBy"
+    :aria-disabled="disabled ? 'true' : 'false'"
     @blur="searchable ? false : deactivate()"
-    @keydown.self.down.prevent="pointerForward()"
-    @keydown.self.up.prevent="pointerBackward()"
-    @keypress.enter.tab.stop.self="addPointerElement($event)"
-    @keyup.esc="deactivate()"
+    @keydown.self.down.prevent="handlePointerForward()"
+    @keydown.self.up.prevent="handlePointerBackward()"
+    @keydown.enter.prevent.stop.self="handleRootEnter($event)"
+    @keyup.esc="deactivate(true)"
     class="multiselect">
       <slot name="caret" :toggle="toggle">
         <div @mousedown.prevent.stop="toggle()" class="multiselect__select"></div>
       </slot>
       <slot name="clear" :search="search"></slot>
-      <div ref="tags" class="multiselect__tags">
+      <div ref="tags" class="multiselect__tags" @mousedown="handleTagsMousedown($event)">
         <slot
           name="selection"
           :search="search"
@@ -26,7 +33,7 @@
               <slot name="tag" :option="option" :search="search" :remove="removeElement">
                 <span class="multiselect__tag" :key="index">
                   <span v-text="getOptionLabel(option)"></span>
-                  <i aria-hidden="true" tabindex="1" @keypress.enter.prevent="removeElement(option)"  @mousedown.prevent="removeElement(option)" class="multiselect__tag-icon"></i>
+                  <i aria-hidden="true" tabindex="1" @keypress.enter.prevent="removeElement(option)"  @mousedown.prevent.stop="removeElement(option)" class="multiselect__tag-icon"></i>
                 </span>
               </slot>
             </template>
@@ -46,11 +53,9 @@
           ref="search"
           v-if="searchable"
           :name="name"
-          :id="id"
+          :id="id ? id + '-input' : null"
           type="text"
-          role="combobox"
-          :aria-expanded="isOpen ? 'true' : 'false'"
-          :aria-owns="id + '-listbox'"
+          :aria-controls="id + '-listbox'"
           :aria-activedescendant="isOpen && pointerDirty ? id + '-option-' + pointer : null"
           aria-autocomplete="list"
           :autocomplete="autocomplete"
@@ -60,11 +65,10 @@
           :style="inputStyle"
           :value="search"
           :disabled="disabled"
-          :tabindex="tabindex"
+          :tabindex="isOpen ? tabindex : -1"
           @input="updateSearch($event.target.value)"
-          @focus.prevent="activate()"
           @blur.prevent="deactivate()"
-          @keyup.esc="deactivate()"
+          @keyup.esc="deactivate(true)"
           @keydown.down.prevent="pointerForward()"
           @keydown.up.prevent="pointerBackward()"
           @keypress.enter.prevent.stop.self="addPointerElement($event)"

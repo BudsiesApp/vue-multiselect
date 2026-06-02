@@ -531,7 +531,7 @@ export default {
       if (option.isTag) {
         this.$emit('tag', option.label, this.id)
         this.search = ''
-        if (this.closeOnSelect && !this.multiple) this.deactivate()
+        if (this.closeOnSelect && !this.multiple) this.deactivate(true)
       } else {
         const isSelected = this.isSelected(option)
 
@@ -552,7 +552,7 @@ export default {
         if (this.clearOnSelect) this.search = ''
       }
       /* istanbul ignore else */
-      if (this.closeOnSelect) this.deactivate()
+      if (this.closeOnSelect) this.deactivate(true)
     },
     /**
      * Add the given group options to the list of selected options
@@ -620,7 +620,7 @@ export default {
       if (option.$isDisabled) return
       /* istanbul ignore else */
       if (!this.allowEmpty && this.internalValue.length <= 1) {
-        this.deactivate()
+        this.deactivate(true)
         return
       }
 
@@ -637,7 +637,7 @@ export default {
       }
 
       /* istanbul ignore else */
-      if (this.closeOnSelect && shouldClose) this.deactivate()
+      if (this.closeOnSelect && shouldClose) this.deactivate(true)
     },
     /**
      * Calls this.removeElement() with the last element
@@ -671,9 +671,11 @@ export default {
       /* istanbul ignore else  */
       if (this.searchable) {
         if (!this.preserveSearch) this.search = ''
-        this.$nextTick(() => this.$refs.search.focus())
+        this.$nextTick(() => {
+          if (this.$refs.search) this.$refs.search.focus()
+        })
       } else {
-        this.$el.focus()
+        this.focusTrigger()
       }
       this.$emit('open', this.id)
     },
@@ -681,19 +683,17 @@ export default {
      * Closes the multiselect’s dropdown.
      * Sets this.isOpen to FALSE
      */
-    deactivate () {
+    deactivate (shouldFocus = false) {
       /* istanbul ignore else */
       if (!this.isOpen) return
 
       this.isOpen = false
-      /* istanbul ignore else  */
-      if (this.searchable) {
-        this.$refs.search.blur()
-      } else {
-        this.$el.blur()
-      }
       if (!this.preserveSearch) this.search = ''
       this.$emit('close', this.getValue(), this.id)
+
+      if (shouldFocus) {
+        this.$nextTick(() => this.focusTrigger())
+      }
     },
     /**
      * Call this.activate() or this.deactivate()
@@ -704,8 +704,43 @@ export default {
      */
     toggle () {
       this.isOpen
-        ? this.deactivate()
+        ? this.deactivate(true)
         : this.activate()
+    },
+    focusTrigger () {
+      if (this.$el && typeof this.$el.focus === 'function') {
+        this.$el.focus()
+      }
+    },
+    handleTagsMousedown (event) {
+      if (event.defaultPrevented || this.isOpen || this.disabled) return
+
+      event.preventDefault()
+      this.activate()
+    },
+    handlePointerForward () {
+      if (!this.isOpen) {
+        this.activate()
+        return
+      }
+
+      this.pointerForward()
+    },
+    handlePointerBackward () {
+      if (!this.isOpen) {
+        this.activate()
+        return
+      }
+
+      this.pointerBackward()
+    },
+    handleRootEnter (event) {
+      if (!this.isOpen) {
+        this.activate()
+        return
+      }
+
+      this.addPointerElement(event)
     },
     /**
      * Updates the hasEnoughSpace variable used for
@@ -751,7 +786,7 @@ export default {
       this.select(selectedOption)
 
       setTimeout(() => {
-        this.deactivate()
+        this.deactivate(true)
       }, 0)
     },
     findOptionByFieldNameAndValue (
