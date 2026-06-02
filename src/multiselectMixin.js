@@ -716,6 +716,15 @@ export default {
         this.$el.focus()
       }
     },
+    handleFocusOut (event) {
+      if (!this.isOpen) return
+
+      const nextTarget = event.relatedTarget
+
+      if (nextTarget && this.$el.contains(nextTarget)) return
+
+      this.deactivate()
+    },
     handleTagsMousedown (event) {
       if (event.defaultPrevented || this.isOpen || this.disabled) return
 
