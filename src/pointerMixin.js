@@ -32,8 +32,10 @@ export default {
     filteredOptions () {
       this.pointerAdjust()
     },
-    isOpen () {
-      this.pointerDirty = false
+    isOpen (isOpen) {
+      if (!isOpen) {
+        this.pointerDirty = false
+      }
     }
   },
   methods: {
@@ -128,6 +130,16 @@ export default {
       ) {
         this.pointerForward()
       }
+    },
+    pointerSetSelected () {
+      const selectedIndex = this.filteredOptions.findIndex(option => {
+        return option && !option.$isLabel && this.isSelected(option)
+      })
+
+      if (selectedIndex === -1) return
+
+      this.pointer = selectedIndex
+      this.pointerDirty = true
     },
     pointerSet (index) {
       this.pointer = index

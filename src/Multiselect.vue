@@ -71,7 +71,7 @@
           @keyup.esc="deactivate(true)"
           @keydown.down.prevent="pointerForward()"
           @keydown.up.prevent="pointerBackward()"
-          @keypress.enter.prevent.stop.self="addPointerElement($event)"
+          @keydown.enter.prevent.stop.self="addPointerElement($event)"
           @keydown.delete.stop="removeLastElement()"
           @change="onAutocompleteFieldInput"
           class="multiselect__input"

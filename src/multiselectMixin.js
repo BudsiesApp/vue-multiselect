@@ -662,8 +662,10 @@ export default {
       if (this.isOpen || this.disabled) return
 
       this.adjustPosition()
+      this.pointerDirty = false
+      this.pointerSetSelected()
       /* istanbul ignore else  */
-      if (this.groupValues && this.pointer === 0 && this.filteredOptions.length) {
+      if (!this.pointerDirty && this.groupValues && this.pointer === 0 && this.filteredOptions.length) {
         this.pointer = 1
       }
 
