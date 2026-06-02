@@ -670,15 +670,17 @@ export default {
       }
 
       this.isOpen = true
-      /* istanbul ignore else  */
-      if (this.searchable) {
-        if (!this.preserveSearch) this.search = ''
-        this.$nextTick(() => {
+      if (this.searchable && !this.preserveSearch) this.search = ''
+      this.$nextTick(() => {
+        this.pointerScrollToView()
+
+        /* istanbul ignore else  */
+        if (this.searchable) {
           if (this.$refs.search) this.$refs.search.focus()
-        })
-      } else {
-        this.focusTrigger()
-      }
+        } else {
+          this.focusTrigger()
+        }
+      })
       this.$emit('open', this.id)
     },
     /**
