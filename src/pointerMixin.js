@@ -32,11 +32,24 @@ export default {
     filteredOptions () {
       this.pointerAdjust()
     },
-    isOpen () {
-      this.pointerDirty = false
+    isOpen (isOpen) {
+      if (!isOpen) {
+        this.pointerDirty = false
+      }
     }
   },
   methods: {
+    pointerScrollToView () {
+      /* istanbul ignore else */
+      if (!this.$refs.list) return
+
+      const option = this.$refs.list.querySelectorAll('.multiselect__element .multiselect__option')[this.pointer]
+
+      /* istanbul ignore else */
+      if (option && typeof option.scrollIntoView === 'function') {
+        option.scrollIntoView({ block: 'nearest' })
+      }
+    },
     optionHighlight (index, option) {
       return {
         'multiselect__option--highlight': index === this.pointer && this.showPointer,
@@ -69,10 +82,7 @@ export default {
       /* istanbul ignore else */
       if (this.pointer < this.filteredOptions.length - 1) {
         this.pointer++
-        /* istanbul ignore next */
-        if (this.$refs.list.scrollTop <= this.pointerPosition - (this.visibleElements - 1) * this.optionHeight) {
-          this.$refs.list.scrollTop = this.pointerPosition - (this.visibleElements - 1) * this.optionHeight
-        }
+        this.pointerScrollToView()
         /* istanbul ignore else */
         if (
           this.filteredOptions[this.pointer] &&
@@ -85,10 +95,7 @@ export default {
     pointerBackward () {
       if (this.pointer > 0) {
         this.pointer--
-        /* istanbul ignore else */
-        if (this.$refs.list.scrollTop >= this.pointerPosition) {
-          this.$refs.list.scrollTop = this.pointerPosition
-        }
+        this.pointerScrollToView()
         /* istanbul ignore else */
         if (
           this.filteredOptions[this.pointer] &&
@@ -128,6 +135,16 @@ export default {
       ) {
         this.pointerForward()
       }
+    },
+    pointerSetSelected () {
+      const selectedIndex = this.filteredOptions.findIndex(option => {
+        return option && !option.$isLabel && this.isSelected(option)
+      })
+
+      if (selectedIndex === -1) return
+
+      this.pointer = selectedIndex
+      this.pointerDirty = true
     },
     pointerSet (index) {
       this.pointer = index

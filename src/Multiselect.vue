@@ -1,19 +1,26 @@
 <template>
   <div
-    :tabindex="searchable ? -1 : tabindex"
+    :id="id"
+    :tabindex="searchable && isOpen ? -1 : tabindex"
     :class="{ 'multiselect--active': isOpen, 'multiselect--disabled': disabled, 'multiselect--above': isAbove }"
-    @focus="activate()"
-    @blur="searchable ? false : deactivate()"
-    @keydown.self.down.prevent="pointerForward()"
-    @keydown.self.up.prevent="pointerBackward()"
-    @keypress.enter.tab.stop.self="addPointerElement($event)"
-    @keyup.esc="deactivate()"
+    role="combobox"
+    :aria-expanded="isOpen ? 'true' : 'false'"
+    :aria-owns="id + '-listbox'"
+    :aria-activedescendant="isOpen && pointerDirty ? id + '-option-' + pointer : null"
+    aria-haspopup="listbox"
+    :aria-labelledby="labelledBy"
+    :aria-disabled="disabled ? 'true' : 'false'"
+    @focusout="handleFocusOut($event)"
+    @keydown.self.down.prevent="handlePointerForward()"
+    @keydown.self.up.prevent="handlePointerBackward()"
+    @keydown.enter.prevent.stop.self="handleRootEnter($event)"
+    @keyup.esc="deactivate(true)"
     class="multiselect">
       <slot name="caret" :toggle="toggle">
         <div @mousedown.prevent.stop="toggle()" class="multiselect__select"></div>
       </slot>
       <slot name="clear" :search="search"></slot>
-      <div ref="tags" class="multiselect__tags">
+      <div ref="tags" class="multiselect__tags" @mousedown="handleTagsMousedown($event)">
         <slot
           name="selection"
           :search="search"
@@ -26,7 +33,7 @@
               <slot name="tag" :option="option" :search="search" :remove="removeElement">
                 <span class="multiselect__tag" :key="index">
                   <span v-text="getOptionLabel(option)"></span>
-                  <i aria-hidden="true" tabindex="1" @keypress.enter.prevent="removeElement(option)"  @mousedown.prevent="removeElement(option)" class="multiselect__tag-icon"></i>
+                  <i aria-hidden="true" tabindex="1" @keypress.enter.prevent="removeElement(option)"  @mousedown.prevent.stop="removeElement(option)" class="multiselect__tag-icon"></i>
                 </span>
               </slot>
             </template>
@@ -46,22 +53,23 @@
           ref="search"
           v-if="searchable"
           :name="name"
-          :id="id"
+          :id="id ? id + '-input' : null"
           type="text"
+          :aria-controls="id + '-listbox'"
+          :aria-activedescendant="isOpen && pointerDirty ? id + '-option-' + pointer : null"
+          aria-autocomplete="list"
           :autocomplete="autocomplete"
           spellcheck="false"
           :placeholder="placeholder"
           :style="inputStyle"
           :value="search"
           :disabled="disabled"
-          :tabindex="tabindex"
+          :tabindex="isOpen ? tabindex : -1"
           @input="updateSearch($event.target.value)"
-          @focus.prevent="activate()"
-          @blur.prevent="deactivate()"
-          @keyup.esc="deactivate()"
+          @keyup.esc="deactivate(true)"
           @keydown.down.prevent="pointerForward()"
           @keydown.up.prevent="pointerBackward()"
-          @keypress.enter.prevent.stop.self="addPointerElement($event)"
+          @keydown.enter.prevent.stop.self="addPointerElement($event)"
           @keydown.delete.stop="removeLastElement()"
           @change="onAutocompleteFieldInput"
           class="multiselect__input"
@@ -95,7 +103,7 @@
           :style="{ maxHeight: optimizedHeight + 'px' }"
           ref="list"
         >
-          <ul class="multiselect__content" :style="contentStyle">
+          <ul class="multiselect__content" :style="contentStyle" :id="id + '-listbox'" role="listbox">
             <slot name="beforeList"></slot>
             <li v-if="multiple && max === internalValue.length">
               <span class="multiselect__option">
@@ -106,6 +114,9 @@
               <li class="multiselect__element" v-for="(option, index) of filteredOptions" :key="index">
                 <span
                   v-if="!(option && (option.$isLabel || option.$isDisabled))"
+                  :id="id + '-option-' + index"
+                  role="option"
+                  :aria-selected="isSelected(option) ? 'true' : 'false'"
                   :class="optionHighlight(index, option)"
                   @click.stop="select(option)"
                   @mouseenter.self="pointerSet(index)"
@@ -291,6 +302,10 @@ export default {
     tabindex: {
       type: Number,
       default: 0
+    },
+    labelledBy: {
+      type: String,
+      default: undefined
     }
   },
   computed: {
@@ -831,3 +846,4 @@ fieldset[disabled] .multiselect {
   }
 }
 </style>
+
