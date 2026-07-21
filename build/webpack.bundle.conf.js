@@ -15,12 +15,16 @@ base.entry = {
 }
 
 const webpackConfig = merge(base, {
+  mode: 'production',
   output: {
     path: config.bundle.assetsRoot,
     publicPath: config.bundle.assetsPublicPath,
     filename: 'vue-multiselect.min.js',
     library: 'VueMultiselect',
     libraryTarget: 'umd'
+  },
+  optimization: {
+    minimize: true
   },
   module: {
     rules: utils.styleLoaders({
@@ -33,14 +37,16 @@ const webpackConfig = merge(base, {
     new webpack.DefinePlugin({
       'process.env': env
     }),
-    new webpack.optimize.UglifyJsPlugin({
-      compress: { warnings: false }
-    }),
     new ExtractTextPlugin({
       filename: 'vue-multiselect.min.css'
     }),
     new OptimizeCssAssetsPlugin({
-      cssProcessor: require('cssnano')
+      cssProcessor: require('cssnano'),
+      cssProcessorOptions: {
+        map: {
+          inline: false
+        }
+      }
     })
   ]
 })

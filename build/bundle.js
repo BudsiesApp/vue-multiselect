@@ -29,5 +29,10 @@ webpack(webpackConfig, function (err, stats) {
     chunkModules: false
   }) + '\n\n')
 
+  if (stats.hasErrors()) {
+    process.exit(1)
+  }
+
   console.log(chalk.cyan('  Build complete.\n'))
+  process.exit(0)
 })
