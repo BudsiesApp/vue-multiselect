@@ -3,13 +3,13 @@
     :id="id"
     :tabindex="searchable && isOpen ? -1 : tabindex"
     :class="{ 'multiselect--active': isOpen, 'multiselect--disabled': disabled, 'multiselect--above': isAbove }"
-    role="combobox"
-    :aria-expanded="isOpen ? 'true' : 'false'"
-    :aria-owns="id + '-listbox'"
-    :aria-activedescendant="isOpen && pointerDirty ? id + '-option-' + pointer : null"
-    aria-haspopup="listbox"
-    :aria-labelledby="labelledBy"
-    :aria-disabled="disabled ? 'true' : 'false'"
+    :role="searchable && isOpen ? null : 'combobox'"
+    :aria-expanded="searchable && isOpen ? null : (isOpen ? 'true' : 'false')"
+    :aria-controls="searchable && isOpen ? null : id + '-listbox'"
+    :aria-activedescendant="!searchable && isOpen && pointerDirty ? id + '-option-' + pointer : null"
+    :aria-haspopup="searchable && isOpen ? null : 'listbox'"
+    :aria-labelledby="searchable && isOpen ? null : labelledBy"
+    :aria-disabled="searchable && isOpen ? null : (disabled ? 'true' : 'false')"
     @focusout="handleFocusOut($event)"
     @keydown.self.down.prevent="handlePointerForward()"
     @keydown.self.up.prevent="handlePointerBackward()"
@@ -55,9 +55,14 @@
           :name="name"
           :id="id ? id + '-input' : null"
           type="text"
+          :role="isOpen ? 'combobox' : null"
+          :aria-expanded="isOpen ? 'true' : null"
           :aria-controls="id + '-listbox'"
           :aria-activedescendant="isOpen && pointerDirty ? id + '-option-' + pointer : null"
-          aria-autocomplete="list"
+          :aria-haspopup="isOpen ? 'listbox' : null"
+          :aria-labelledby="isOpen ? labelledBy : null"
+          :aria-disabled="isOpen ? (disabled ? 'true' : 'false') : null"
+          :aria-autocomplete="isOpen ? 'list' : null"
           :autocomplete="autocomplete"
           spellcheck="false"
           :placeholder="placeholder"
@@ -111,12 +116,17 @@
               </span>
             </li>
             <template v-if="!max || internalValue.length < max">
-              <li class="multiselect__element" v-for="(option, index) of filteredOptions" :key="index">
+              <li
+                class="multiselect__element"
+                v-for="(option, index) of filteredOptions"
+                :key="index"
+                :id="id + '-option-' + index"
+                role="option"
+                :aria-selected="isSelected(option) ? 'true' : 'false'"
+                :aria-disabled="option && (option.$isLabel || option.$isDisabled) ? 'true' : null"
+              >
                 <span
                   v-if="!(option && (option.$isLabel || option.$isDisabled))"
-                  :id="id + '-option-' + index"
-                  role="option"
-                  :aria-selected="isSelected(option) ? 'true' : 'false'"
                   :class="optionHighlight(index, option)"
                   @click.stop="select(option)"
                   @mouseenter.self="pointerSet(index)"
@@ -846,4 +856,3 @@ fieldset[disabled] .multiselect {
   }
 }
 </style>
-
