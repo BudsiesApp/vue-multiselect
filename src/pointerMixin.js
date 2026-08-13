@@ -136,7 +136,7 @@ export default {
         this.pointerForward()
       }
     },
-    pointerSetSelected () {
+    pointerSetSelected (markAsActive = true) {
       const selectedIndex = this.filteredOptions.findIndex(option => {
         return option && !option.$isLabel && this.isSelected(option)
       })
@@ -144,7 +144,7 @@ export default {
       if (selectedIndex === -1) return
 
       this.pointer = selectedIndex
-      this.pointerDirty = true
+      this.pointerDirty = markAsActive
     },
     pointerSet (index) {
       this.pointer = index
