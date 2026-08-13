@@ -5,7 +5,6 @@
     :class="{ 'multiselect--active': isOpen, 'multiselect--disabled': disabled, 'multiselect--above': isAbove }"
     role="combobox"
     :aria-expanded="isOpen ? 'true' : 'false'"
-    :aria-owns="id + '-listbox'"
     :aria-activedescendant="isOpen && pointerDirty ? id + '-option-' + pointer : null"
     aria-haspopup="listbox"
     :aria-labelledby="labelledBy"
@@ -99,12 +98,13 @@
           v-show="isOpen"
           @focus="activate"
           tabindex="-1"
-          role="presentation"
+          :id="id + '-listbox'"
+          role="listbox"
           @mousedown.prevent
           :style="{ maxHeight: optimizedHeight + 'px' }"
           ref="list"
         >
-          <ul class="multiselect__content" :style="contentStyle" :id="id + '-listbox'" role="listbox">
+          <ul class="multiselect__content" :style="contentStyle" role="presentation">
             <slot name="beforeList"></slot>
             <li role="presentation" v-if="multiple && max === internalValue.length">
               <span class="multiselect__option">
