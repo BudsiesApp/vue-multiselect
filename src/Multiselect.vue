@@ -5,6 +5,7 @@
     :class="{ 'multiselect--active': isOpen, 'multiselect--disabled': disabled, 'multiselect--above': isAbove }"
     role="combobox"
     :aria-expanded="isOpen ? 'true' : 'false'"
+    :aria-owns="id + '-listbox'"
     :aria-activedescendant="isOpen && pointerDirty ? id + '-option-' + pointer : null"
     aria-haspopup="listbox"
     :aria-labelledby="labelledBy"
@@ -98,21 +99,19 @@
           v-show="isOpen"
           @focus="activate"
           tabindex="-1"
-          :id="id + '-listbox'"
-          role="listbox"
           @mousedown.prevent
           :style="{ maxHeight: optimizedHeight + 'px' }"
           ref="list"
         >
-          <ul class="multiselect__content" :style="contentStyle" role="presentation">
+          <ul class="multiselect__content" :style="contentStyle" :id="id + '-listbox'" role="listbox">
             <slot name="beforeList"></slot>
-            <li role="presentation" v-if="multiple && max === internalValue.length">
+            <li v-if="multiple && max === internalValue.length">
               <span class="multiselect__option">
                 <slot name="maxElements">Maximum of {{ max }} options selected. First remove a selected option to select another.</slot>
               </span>
             </li>
             <template v-if="!max || internalValue.length < max">
-              <li role="presentation" class="multiselect__element" v-for="(option, index) of filteredOptions" :key="index">
+              <li class="multiselect__element" v-for="(option, index) of filteredOptions" :key="index">
                 <span
                   v-if="!(option && (option.$isLabel || option.$isDisabled))"
                   :id="id + '-option-' + index"
@@ -143,12 +142,12 @@
                 </span>
               </li>
             </template>
-            <li role="presentation" v-show="showNoResults && (filteredOptions.length === 0 && search && !loading)">
+            <li v-show="showNoResults && (filteredOptions.length === 0 && search && !loading)">
               <span class="multiselect__option">
                 <slot name="noResult" :search="search">No elements found. Consider changing the search query.</slot>
               </span>
             </li>
-            <li role="presentation" v-show="showNoOptions && (options.length === 0 && !search && !loading)">
+            <li v-show="showNoOptions && (options.length === 0 && !search && !loading)">
               <span class="multiselect__option">
                 <slot name="noOptions">List is empty.</slot>
               </span>
@@ -847,3 +846,4 @@ fieldset[disabled] .multiselect {
   }
 }
 </style>
+
