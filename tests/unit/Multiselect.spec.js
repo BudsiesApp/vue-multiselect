@@ -2,6 +2,123 @@ import { shallowMount } from '@vue/test-utils'
 import Multiselect from '@/Multiselect.vue'
 
 describe('Multiselect.vue', () => {
+  describe('Accessibility', () => {
+    test('should keep the search input as the combobox when its state changes', async () => {
+      const wrapper = shallowMount(Multiselect, {
+        attachToDocument: true,
+        propsData: {
+          id: 'state',
+          labelledBy: 'state-label',
+          value: 'Alabama',
+          options: ['Alabama', 'Alaska']
+        }
+      })
+
+      const searchInput = wrapper.find('.multiselect__input').element
+
+      expect(wrapper.element.getAttribute('role')).toBe(null)
+      expect(searchInput.getAttribute('role')).toBe('combobox')
+      expect(searchInput.getAttribute('aria-expanded')).toBe('false')
+      expect(searchInput.value).toBe('Alabama')
+
+      searchInput.focus()
+      await wrapper.vm.$nextTick()
+
+      expect(document.activeElement).toBe(searchInput)
+      expect(wrapper.vm.isOpen).toBe(false)
+      expect(wrapper.element.getAttribute('role')).toBe(null)
+      expect(searchInput.getAttribute('role')).toBe('combobox')
+      expect(searchInput.getAttribute('aria-expanded')).toBe('false')
+      expect(searchInput.getAttribute('aria-controls')).toBe('state-listbox')
+      expect(searchInput.getAttribute('aria-labelledby')).toBe('state-label')
+
+      wrapper.vm.handlePointerForward()
+      await wrapper.vm.$nextTick()
+
+      expect(document.activeElement).toBe(searchInput)
+      expect(searchInput.getAttribute('aria-expanded')).toBe('true')
+      expect(searchInput.getAttribute('aria-activedescendant')).toBe(null)
+      expect(searchInput.value).toBe('')
+
+      wrapper.vm.pointerForward()
+      await wrapper.vm.$nextTick()
+
+      expect(searchInput.getAttribute('aria-activedescendant')).toBe('state-option-1')
+
+      wrapper.vm.deactivate(true)
+      await wrapper.vm.$nextTick()
+
+      expect(document.activeElement).toBe(searchInput)
+      expect(searchInput.getAttribute('role')).toBe('combobox')
+      expect(searchInput.getAttribute('aria-expanded')).toBe('false')
+      expect(searchInput.value).toBe('Alabama')
+
+      wrapper.destroy()
+    })
+
+    test('should close an expanded combobox on the first Escape keydown', async () => {
+      const wrapper = shallowMount(Multiselect, {
+        propsData: {
+          id: 'state',
+          options: ['Alabama', 'Alaska']
+        }
+      })
+
+      wrapper.vm.activate()
+      await wrapper.vm.$nextTick()
+
+      const event = new window.KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+        cancelable: true
+      })
+
+      wrapper.find('.multiselect__input').element.dispatchEvent(event)
+      await wrapper.vm.$nextTick()
+
+      expect(event.defaultPrevented).toBe(true)
+      expect(wrapper.vm.isOpen).toBe(false)
+    })
+
+    test('should expose options as direct semantic children of the listbox', () => {
+      const wrapper = shallowMount(Multiselect, {
+        propsData: {
+          id: 'state',
+          options: [
+            { label: 'Alabama' },
+            { label: 'Alaska', $isDisabled: true }
+          ],
+          label: 'label'
+        }
+      })
+
+      const listbox = wrapper.find('[role="listbox"]').element
+      const options = wrapper.findAll('[role="option"]')
+
+      expect(options.length).toBe(2)
+      expect(options.at(0).element.parentElement).toBe(listbox)
+      expect(options.at(0).element.id).toBe('state-option-0')
+      expect(options.at(0).text()).toContain('Alabama')
+      expect(options.at(1).element.getAttribute('aria-disabled')).toBe('true')
+    })
+
+    test('should keep the root as the combobox when search is disabled', () => {
+      const wrapper = shallowMount(Multiselect, {
+        propsData: {
+          id: 'state',
+          options: ['Alabama', 'Alaska'],
+          searchable: false
+        }
+      })
+
+      wrapper.vm.activate()
+
+      expect(wrapper.element.getAttribute('role')).toBe('combobox')
+      expect(wrapper.element.getAttribute('aria-expanded')).toBe('true')
+      expect(wrapper.element.getAttribute('aria-controls')).toBe('state-listbox')
+    })
+  })
+
   describe(':value', () => {
     test('should work when initial value is null', () => {
       const wrapper = shallowMount(Multiselect, {
@@ -865,6 +982,22 @@ describe('Multiselect.vue', () => {
       wrapper.setData({ search: 'test' })
 
       expect(wrapper.emitted()['search-change']).toEqual([['test', null]])
+    })
+  })
+
+  describe('#handleSearchInput()', () => {
+    test('should reopen a collapsed searchable dropdown before updating search', () => {
+      const wrapper = shallowMount(Multiselect, {
+        propsData: {
+          options: ['Alabama', 'Alaska']
+        }
+      })
+
+      wrapper.vm.isOpen = false
+      wrapper.vm.handleSearchInput('Ala')
+
+      expect(wrapper.vm.isOpen).toBe(true)
+      expect(wrapper.vm.search).toBe('Ala')
     })
   })
 

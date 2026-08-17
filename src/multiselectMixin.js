@@ -663,7 +663,7 @@ export default {
 
       this.adjustPosition()
       this.pointerDirty = false
-      this.pointerSetSelected()
+      this.pointerSetSelected(false)
       /* istanbul ignore else  */
       if (!this.pointerDirty && this.groupValues && this.pointer === 0 && this.filteredOptions.length) {
         this.pointer = 1
@@ -695,7 +695,7 @@ export default {
       if (!this.preserveSearch) this.search = ''
       this.$emit('close', this.getValue(), this.id)
 
-      if (shouldFocus) {
+      if (shouldFocus && !this.searchable) {
         this.$nextTick(() => this.focusTrigger())
       }
     },
@@ -730,6 +730,11 @@ export default {
 
       event.preventDefault()
       this.activate()
+    },
+    handleSearchInput (query) {
+      if (!this.isOpen) this.activate()
+
+      this.updateSearch(query)
     },
     handlePointerForward () {
       if (!this.isOpen) {

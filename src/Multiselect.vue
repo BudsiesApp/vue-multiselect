@@ -1,20 +1,20 @@
 <template>
   <div
     :id="id"
-    :tabindex="searchable && isOpen ? -1 : tabindex"
+    :tabindex="searchable ? -1 : tabindex"
     :class="{ 'multiselect--active': isOpen, 'multiselect--disabled': disabled, 'multiselect--above': isAbove }"
-    role="combobox"
-    :aria-expanded="isOpen ? 'true' : 'false'"
-    :aria-owns="id + '-listbox'"
-    :aria-activedescendant="isOpen && pointerDirty ? id + '-option-' + pointer : null"
-    aria-haspopup="listbox"
-    :aria-labelledby="labelledBy"
-    :aria-disabled="disabled ? 'true' : 'false'"
+    :role="searchable ? null : 'combobox'"
+    :aria-expanded="searchable ? null : (isOpen ? 'true' : 'false')"
+    :aria-controls="searchable ? null : id + '-listbox'"
+    :aria-activedescendant="!searchable && isOpen && pointerDirty ? id + '-option-' + pointer : null"
+    :aria-haspopup="searchable ? null : 'listbox'"
+    :aria-labelledby="searchable ? null : labelledBy"
+    :aria-disabled="searchable ? null : (disabled ? 'true' : 'false')"
     @focusout="handleFocusOut($event)"
     @keydown.self.down.prevent="handlePointerForward()"
     @keydown.self.up.prevent="handlePointerBackward()"
     @keydown.enter.prevent.stop.self="handleRootEnter($event)"
-    @keyup.esc="deactivate(true)"
+    @keydown.esc.prevent.stop="deactivate(true)"
     class="multiselect">
       <slot name="caret" :toggle="toggle">
         <div @mousedown.prevent.stop="toggle()" class="multiselect__select"></div>
@@ -55,21 +55,25 @@
           :name="name"
           :id="id ? id + '-input' : null"
           type="text"
+          role="combobox"
+          :aria-expanded="isOpen ? 'true' : 'false'"
           :aria-controls="id + '-listbox'"
           :aria-activedescendant="isOpen && pointerDirty ? id + '-option-' + pointer : null"
+          aria-haspopup="listbox"
+          :aria-labelledby="labelledBy"
+          :aria-disabled="disabled ? 'true' : 'false'"
           aria-autocomplete="list"
           :autocomplete="autocomplete"
           spellcheck="false"
           :placeholder="placeholder"
           :style="inputStyle"
-          :value="search"
+          :value="isOpen ? search : currentOptionLabel"
           :disabled="disabled"
-          :tabindex="isOpen ? tabindex : -1"
-          @input="updateSearch($event.target.value)"
-          @keyup.esc="deactivate(true)"
-          @keydown.down.prevent="pointerForward()"
-          @keydown.up.prevent="pointerBackward()"
-          @keydown.enter.prevent.stop.self="addPointerElement($event)"
+          :tabindex="tabindex"
+          @input="handleSearchInput($event.target.value)"
+          @keydown.down.prevent="handlePointerForward()"
+          @keydown.up.prevent="handlePointerBackward()"
+          @keydown.enter.prevent.stop.self="handleRootEnter($event)"
           @keydown.delete.stop="removeLastElement()"
           @change="onAutocompleteFieldInput"
           class="multiselect__input"
@@ -111,12 +115,17 @@
               </span>
             </li>
             <template v-if="!max || internalValue.length < max">
-              <li class="multiselect__element" v-for="(option, index) of filteredOptions" :key="index">
+              <li
+                class="multiselect__element"
+                v-for="(option, index) of filteredOptions"
+                :key="index"
+                :id="id + '-option-' + index"
+                role="option"
+                :aria-selected="isSelected(option) ? 'true' : 'false'"
+                :aria-disabled="option && (option.$isLabel || option.$isDisabled) ? 'true' : null"
+              >
                 <span
                   v-if="!(option && (option.$isLabel || option.$isDisabled))"
-                  :id="id + '-option-' + index"
-                  role="option"
-                  :aria-selected="isSelected(option) ? 'true' : 'false'"
                   :class="optionHighlight(index, option)"
                   @click.stop="select(option)"
                   @mouseenter.self="pointerSet(index)"
@@ -846,4 +855,3 @@ fieldset[disabled] .multiselect {
   }
 }
 </style>
-
